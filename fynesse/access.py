@@ -92,7 +92,7 @@ def count_pois_near_coordinates(latitude: float, longitude: float, tags: dict, d
       try:
         with warnings.catch_warnings():
           warnings.simplefilter("ignore")
-          count = ox.geometries_from_bbox(north, south, east, west, {tag_key: tag_val}).size
+          count = len(ox.geometries_from_bbox(north, south, east, west, {tag_key: tag_val}).index)
       except ox._errors.InsufficientResponseError:
         count = 0
 
