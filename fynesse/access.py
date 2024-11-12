@@ -74,7 +74,7 @@ def make_box(centre_lat, centre_lon, side_length): # side_length in km; returns 
   return (centre_lat + side_length/222,        centre_lat - side_length/222,
           centre_lon + side_length/lon_factor, centre_lon - side_length/lon_factor)
 
-def count_pois_near_coordinates(latitude: float, longitude: float, tags: dict, distance_km: float = 1.0) -> dict:
+def count_pois_near_coordinates(latitude: float, longitude: float, tags: dict, distance_km: float = 1.0) -> dict:  # maybe move to assess
     """
     Count Points of Interest (POIs) near a given pair of coordinates within a specified distance.
     Args:
