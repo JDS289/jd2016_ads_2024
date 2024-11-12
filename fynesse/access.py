@@ -5,6 +5,7 @@ import csv
 import time
 import osmnx as ox
 from math import cos, radians
+import warnings
 
 """These are the types of import we might expect in this file
 import httplib2
