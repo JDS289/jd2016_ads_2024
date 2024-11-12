@@ -102,7 +102,7 @@ def merge_with_prices(addressed_buildings): # this mutates the input, so there i
     # Attempting to find {house_number}, {street_name}
     with contextlib.redirect_stdout(None):
         
-      cur.execute(f"%sql SELECT * FROM pp_data WHERE date_of_transfer >= '2020-01-01' AND (postcode='{current_postcode}')")
+      cur.execute(f"SELECT * FROM pp_data WHERE date_of_transfer >= '2020-01-01' AND (postcode='{current_postcode}')")
       whole_postcode = cur.fetchall()
     if not whole_postcode:
       # Nothing at all found in the postcode
