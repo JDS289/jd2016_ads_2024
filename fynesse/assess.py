@@ -42,14 +42,6 @@ def labelled(data):
 
 
 
-
-def make_box(centre_lat, centre_lon, side_length): # side_length in km; returns lat_high, lat_low, lon_high, lon_low
-  # note that we additionally divide by two (hence using 222 not 111) because side_length is 2*(distance from centre to side)
-  lon_factor = 222*cos(radians(centre_lat))
-  return (centre_lat + side_length/222,        centre_lat - side_length/222,
-          centre_lon + side_length/lon_factor, centre_lon - side_length/lon_factor)
-
-
 def get_buildings(north, south, east, west):
   with warnings.catch_warnings():
     warnings.simplefilter("ignore")
@@ -130,7 +122,7 @@ def merge_with_prices(addressed_buildings): # this mutates the input, so there i
 
 
 def price_area_correlation(latitude, longitude, box_size=2, scatter_plot=False):
-  north, south, east, west = make_box(latitude, longitude, box_size)
+  north, south, east, west = access.make_box(latitude, longitude, box_size)
   buildings = get_buildings(north, south, east, west)
   plot(north, south, east, west, buildings)
   addressed_buildings = buildings[buildings["full_addr"]==True][["addr:housenumber", "addr:street", "addr:postcode", "area", "geometry"]]
