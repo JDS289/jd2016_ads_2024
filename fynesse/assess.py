@@ -89,7 +89,8 @@ def plot(north, south, east, west, buildings):
 
 def merge_with_prices(addressed_buildings): # this mutates the input, so there is no return
 
-  access.initialise_sql()
+  #access.initialise_sql()
+  %load_ext sql
   price_column = [np.NaN]*len(addressed_buildings.index)
 
   for i in range(len(addressed_buildings.index)):
