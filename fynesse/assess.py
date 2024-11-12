@@ -129,8 +129,8 @@ def merge_with_prices(addressed_buildings): # this mutates the input, so there i
 
 
 
-def price_area_correlation(latitude, longitude):
-  north, south, east, west = make_box(latitude, longitude, 2)
+def price_area_correlation(latitude, longitude, box_size=2):
+  north, south, east, west = make_box(latitude, longitude, box_size)
   buildings = get_buildings(north, south, east, west)
   plot(north, south, east, west, buildings)
   addressed_buildings = buildings[buildings["full_addr"]==True][["addr:housenumber", "addr:street", "addr:postcode", "area", "geometry"]]
