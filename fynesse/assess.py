@@ -90,7 +90,9 @@ def plot(north, south, east, west, buildings):
 def merge_with_prices(addressed_buildings): # this mutates the input, so there is no return
 
   #access.initialise_sql()
-  %load_ext sql
+  #%load_ext sql
+  conn = access.create_connection("admin", "ayT2adBkqim", "database-ads-jd2016.cgrre17yxw11.eu-west-2.rds.amazonaws.com", "ads_2024")
+  cur = conn.cursor()
   price_column = [np.NaN]*len(addressed_buildings.index)
 
   for i in range(len(addressed_buildings.index)):
@@ -99,7 +101,9 @@ def merge_with_prices(addressed_buildings): # this mutates the input, so there i
     house_number = addressed_buildings.iloc[i].get("addr:housenumber")
     # Attempting to find {house_number}, {street_name}
     with contextlib.redirect_stdout(None):
-      whole_postcode = %sql SELECT * FROM pp_data WHERE date_of_transfer >= "2020-01-01" AND (postcode='{current_postcode}')
+        
+      cur.execute(f"%sql SELECT * FROM pp_data WHERE date_of_transfer >= '2020-01-01' AND (postcode='{current_postcode}')")
+      whole_postcode = cur.fetchall()
     if not whole_postcode:
       # Nothing at all found in the postcode
       continue
