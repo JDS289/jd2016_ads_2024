@@ -24,6 +24,13 @@ def hello_world():
   print("Hello from the data science library!")
 
 
+
+def initialise_sql():
+  %load_ext sql
+  %sql mariadb+pymysql://admin:ayT2adBkqim@database-ads-jd2016.cgrre17yxw11.eu-west-2.rds.amazonaws.com?local_infile=1
+  %sql USE `ads_2024`;
+
+
 def download_price_paid_data(year_from, year_to):
     # Base URL where the dataset is stored 
     base_url = "http://prod.publicdata.landregistry.gov.uk.s3-website-eu-west-1.amazonaws.com"
