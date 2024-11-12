@@ -43,12 +43,6 @@ def labelled(data):
 
 
 
-def initialise_sql():
-  %load_ext sql
-  %sql mariadb+pymysql://admin:ayT2adBkqim@database-ads-jd2016.cgrre17yxw11.eu-west-2.rds.amazonaws.com?local_infile=1
-  %sql USE `ads_2024`;
-
-
 def make_box(centre_lat, centre_lon, side_length): # side_length in km; returns lat_high, lat_low, lon_high, lon_low
   # note that we additionally divide by two (hence using 222 not 111) because side_length is 2*(distance from centre to side)
   lon_factor = 222*cos(radians(centre_lat))
