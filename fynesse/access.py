@@ -3,6 +3,7 @@ import requests
 import pymysql
 import csv
 import time
+import osmnx as ox
 
 """These are the types of import we might expect in this file
 import httplib2
@@ -64,6 +65,34 @@ def create_connection(user, password, host, database, port=3306):
     except Exception as e:
         print(f"Error connecting to the MariaDB Server: {e}")
     return conn
+
+
+def count_pois_near_coordinates(latitude: float, longitude: float, tags: dict, distance_km: float = 1.0) -> dict:
+    """
+    Count Points of Interest (POIs) near a given pair of coordinates within a specified distance.
+    Args:
+        latitude (float): Latitude of the location.
+        longitude (float): Longitude of the location.
+        tags (dict): A dictionary of OSM tags to filter the POIs (e.g., {'amenity': True, 'tourism': True}).
+        distance_km (float): The distance around the location in kilometers. Default is 1 km.
+    Returns:
+        dict: A dictionary where keys are the OSM tags and values are the counts of POIs for each tag.
+    """
+
+    poi_dict = {}
+    north, south, east, west = make_box(latitude, longitude, distance_km*2)
+    for tag_key, tag_val in tags.items():  # NOTE: I believe {some_tag: True} matches any non-null value, and {some_tag: some_list} matches where the val is in some_list
+      try:
+        with warnings.catch_warnings():
+          warnings.simplefilter("ignore")
+          count = ox.geometries_from_bbox(north, south, east, west, {tag_key: tag_val}).size
+      except ox._errors.InsufficientResponseError:
+        count = 0
+
+      poi_dict[tag_key] = count
+
+    return poi_dict
+
 
 
 def housing_upload_join_data(conn, year):
