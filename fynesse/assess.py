@@ -129,7 +129,7 @@ def merge_with_prices(addressed_buildings): # this mutates the input, so there i
 
 
 
-def price_area_correlation(latitude, longitude, box_size=2):
+def price_area_correlation(latitude, longitude, box_size=2, scatter_plot=False):
   north, south, east, west = make_box(latitude, longitude, box_size)
   buildings = get_buildings(north, south, east, west)
   plot(north, south, east, west, buildings)
@@ -139,5 +139,10 @@ def price_area_correlation(latitude, longitude, box_size=2):
   if len(pna_buildings.index) < 2:
     return "Not enough data (less than 2 relevant samples)"
   area, price = list(pna_buildings.get("area")), list(pna_buildings.get("price"))
+  if scatter_plot:
+      fig, ax = plt.subplots()
+      ax.set_xlabel("area")
+      ax.set_ylabel("price")
+      plt.scatter(area, price)
   return pearsonr(area, price)
 
