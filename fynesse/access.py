@@ -66,6 +66,11 @@ def create_connection(user, password, host, database, port=3306):
         print(f"Error connecting to the MariaDB Server: {e}")
     return conn
 
+def make_box(centre_lat, centre_lon, side_length): # side_length in km; returns lat_high, lat_low, lon_high, lon_low
+  # note that we additionally divide by two (hence using 222 not 111) because side_length is 2*(distance from centre to side)
+  lon_factor = 222*cos(radians(centre_lat))
+  return (centre_lat + side_length/222,        centre_lat - side_length/222,
+          centre_lon + side_length/lon_factor, centre_lon - side_length/lon_factor)
 
 def count_pois_near_coordinates(latitude: float, longitude: float, tags: dict, distance_km: float = 1.0) -> dict:
     """
