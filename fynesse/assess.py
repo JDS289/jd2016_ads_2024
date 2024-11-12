@@ -117,7 +117,7 @@ def merge_with_prices(addressed_buildings): # this mutates the input, so there i
       pass
     elif len(matches) == 1:
       # We have found a likely match
-      price_column[i] = candidate[1]
+      price_column[i] = matches[0][1]
     else:
       # No exact matches found
       pass
