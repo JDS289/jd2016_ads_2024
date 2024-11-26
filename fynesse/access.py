@@ -20,7 +20,7 @@ import sqlite"""
 """Place commands in this file to access the data electronically. Don't remove any missing values, or deal with outliers. Make sure you have legalities correct, both intellectual property and personal data privacy rights. Beyond the legal side also think about the ethical issues around this data. """
 
 
-NSSEC_key = {'L123': 'L1, L2 and L3 Higher managerial, administrative and professional occupations', 'l456': 'L4, L5 and L6 Lower managerial, administrative and professional occupations', 'l7: 'L7 Intermediate occupations', 'l89': 'L8 and L9 Small employers and own account workers', 'l1011': 'L10 and L11 Lower supervisory and technical occupations', 'l12': 'L12 Semi-routine occupations', 'l13': 'l13 Routine occupations', 'l14': 'L14.1 and L14.2 Never worked and long-term unemployed', 'l15': 'L15 Full-time students'}
+NSSEC_key = {'L123': 'L1, L2 and L3 Higher managerial, administrative and professional occupations', 'l456': 'L4, L5 and L6 Lower managerial, administrative and professional occupations', 'l7': 'L7 Intermediate occupations', 'l89': 'L8 and L9 Small employers and own account workers', 'l1011': 'L10 and L11 Lower supervisory and technical occupations', 'l12': 'L12 Semi-routine occupations', 'l13': 'l13 Routine occupations', 'l14': 'L14.1 and L14.2 Never worked and long-term unemployed', 'l15': 'L15 Full-time students'}
 
 
 def create_connection(user, password, host, database, port=3306):
