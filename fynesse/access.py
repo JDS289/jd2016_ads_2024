@@ -94,7 +94,7 @@ def download_csv(url):
 
 
 
-"""Below this point are functions which were given in practicals; aside from the specific practical for each, I will avoid using them."""
+
 def download_price_paid_data(year_from, year_to):
     # Base URL where the dataset is stored 
     base_url = "http://prod.publicdata.landregistry.gov.uk.s3-website-eu-west-1.amazonaws.com"
