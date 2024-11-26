@@ -1,0 +1,6 @@
+(Consider allowing this file to contain images? (i.e. remaking with different filetype))
+
+
+The 2021-ts062-oa census (https://www.nomisweb.co.uk/sources/census_2021_bulk):
+    I have confirmed that the "date" column always contains 2021 thus is redundant.
+    I have also confirmed that the "geography" column is always the same as the "geography code" column.
