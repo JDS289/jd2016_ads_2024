@@ -5,6 +5,7 @@
 # https://github.com/navdeep-G/setup.py
 
 # Changes by Neil D. Lawrence for fynesse template
+# Then modified by Joe de Souza (jd2016).
 
 # Note: To use the 'upload' functionality of this file, you must:
 #   $ pipenv install twine --dev
@@ -18,16 +19,16 @@ from setuptools import find_packages, setup, Command
 
 # Package meta-data.
 NAME = "fynesse"
-DESCRIPTION = "Template files for performing fynesse pipeline data analysis with python."
-URL = "https://github.com/lawrennd/fynesse_template"
-EMAIL = "emal@domain.here"
-AUTHOR = "Givenname Familyname"
+DESCRIPTION = "Files for performing fynesse pipeline data analysis with python."
+URL = "https://github.com/JDS289/jd2016_ads_2024/"
+EMAIL = "emal@domain.here" # omitted deliberately
+AUTHOR = "Joe de Souza"
 REQUIRES_PYTHON = ">=3.6.0"
 VERSION = "0.1.0"
 
 # What packages are required for this module to be executed?
 REQUIRED = [
-    "pandas", "numpy", "jupyter", "matplotlib", 
+    "pandas", "numpy", "jupyter", "matplotlib", "pymysql"
 ]
 
 # What packages are optional?
