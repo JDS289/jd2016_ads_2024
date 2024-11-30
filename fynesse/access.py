@@ -66,7 +66,7 @@ def deep_map_coord_conversion(conversion, geom):
   elif geom['type'] == 'MultiPolygon':
     return multiPolygon_map(geom['coordinates'])
   elif geom['type'] == 'Point':
-    return conversion(*geom['coordinates'])
+    return conversion(geom['coordinates'])
   else:  # For the oa_boundaries geojson, every geom is either Polygon or MultiPolygon.
     raise NotImplementedError
 
