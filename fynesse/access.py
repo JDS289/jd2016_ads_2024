@@ -23,9 +23,51 @@ import sqlite"""
 NSSEC_key = {'l123': 'L1, L2 and L3 Higher managerial, administrative and professional occupations', 'l456': 'L4, L5 and L6 Lower managerial, administrative and professional occupations', 'l7': 'L7 Intermediate occupations', 'l89': 'L8 and L9 Small employers and own account workers', 'l1011': 'L10 and L11 Lower supervisory and technical occupations', 'l12': 'L12 Semi-routine occupations', 'l13': 'l13 Routine occupations', 'l14': 'L14.1 and L14.2 Never worked and long-term unemployed', 'l15': 'L15 Full-time students'}
 
 
-def EsNs_to_LatLng(eastings, northings):  # this also rounds a tiny amount - my quick calculations suggest this loses < 5cm
+def EsNs_to_LatLng(eastings_northings):  # this also rounds a tiny amount - my quick calculations suggest this loses < 5cm
+    eastings, northings = eastings_northings
     latLng = transformer.transform(eastings, northings)
     return [round(latLng[1], 6), round(latLng[0], 6)]
+
+def deep_map_coord_conversion(conversion, geom):
+  # geom should be in geojson format
+  def ring_map(ring):
+    return list(map(lambda pair: conversion(pair), ring))
+  
+  def polygon_map(poly):
+    return list(map(lambda ring: ring_map(ring), poly))
+  
+  def multiPolygon_map(multiPoly):
+    return list(map(lambda poly: polygon_map(poly), multiPoly))
+
+  if geom['type'] == 'Polygon':  # any element after the first in a polygon specifies a "hole" 
+    return polygon_map(geom['coordinates'])
+  elif geom['type'] == 'MultiPolygon':
+    return multiPolygon_map(geom['coordinates'])
+  elif geom['type'] == 'Point':
+    return conversion(*geom['coordinates'])
+  else:  # For the oa_boundaries geojson, every geom is either Polygon or MultiPolygon.
+    raise NotImplementedError
+
+def deep_map_coord_conversion(conversion, geom):
+  # geom should be in geojson format
+  # conversion should take two 
+  def ring_map(ring):
+    return list(map(lambda pair: conversion(*pair), ring))
+  
+  def polygon_map(poly):
+    return list(map(lambda ring: ring_map(ring), poly))
+  
+  def multiPolygon_map(multiPoly):
+    return list(map(lambda poly: polygon_map(poly), multiPoly))
+
+  if geom['type'] == 'Polygon':  # any element after the first in a polygon specifies a "hole" 
+    return polygon_map(geom['coordinates'])
+  elif geom['type'] == 'MultiPolygon':
+    return multiPolygon_map(geom['coordinates'])
+  elif geom['type'] == 'Point':
+    return conversion(*geom['coordinates'])
+  else:  # For the oa_boundaries geojson, every geom is either Polygon or MultiPolygon.
+    raise NotImplementedError
 
 
 def create_connection(user, password, host, database, port=3306):
