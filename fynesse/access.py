@@ -23,6 +23,11 @@ import sqlite"""
 NSSEC_key = {'l123': 'L1, L2 and L3 Higher managerial, administrative and professional occupations', 'l456': 'L4, L5 and L6 Lower managerial, administrative and professional occupations', 'l7': 'L7 Intermediate occupations', 'l89': 'L8 and L9 Small employers and own account workers', 'l1011': 'L10 and L11 Lower supervisory and technical occupations', 'l12': 'L12 Semi-routine occupations', 'l13': 'l13 Routine occupations', 'l14': 'L14.1 and L14.2 Never worked and long-term unemployed', 'l15': 'L15 Full-time students'}
 
 
+def EsNs_to_LatLng(eastings, northings):  # this also rounds a tiny amount - my quick calculations suggest this loses < 5cm
+    latLng = transformer.transform(eastings, northings)
+    return [round(latLng[1], 6), round(latLng[0], 6)]
+
+
 def create_connection(user, password, host, database, port=3306):
     """ Create a database connection to the MariaDB database
         specified by the host url and database name.
