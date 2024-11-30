@@ -25,8 +25,10 @@ NSSEC_key = {'l123': 'L1, L2 and L3 Higher managerial, administrative and profes
 
 
 def EsNs_to_LatLng(eastings_northings):  # this also rounds a tiny amount - my quick calculations suggest this loses < 5cm
+    if not hasattr(EsNs_to_LatLng, "transformer"):
+        EsNs_to_LatLng.transformer = Transformer.from_crs("epsg:27700", "epsg:4326", always_xy=True)
     eastings, northings = eastings_northings
-    latLng = Transformer.from_crs("epsg:27700", "epsg:4326", always_xy=True).transform(eastings, northings)
+    latLng = EsNs_to_LatLng.transformer.transform(eastings, northings)
     return [round(latLng[1], 6), round(latLng[0], 6)]
 
 
