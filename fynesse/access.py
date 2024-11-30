@@ -34,7 +34,6 @@ def EsNs_to_LatLng(eastings_northings):  # this also rounds a tiny amount - my q
 
 def deep_map_coord_conversion(conversion, geom):
   # geom should be in geojson format
-  # conversion should take two 
   def ring_map(ring):
     return list(map(lambda pair: conversion(pair), ring))
   
@@ -45,13 +44,15 @@ def deep_map_coord_conversion(conversion, geom):
     return list(map(lambda poly: polygon_map(poly), multiPoly))
 
   if geom['type'] == 'Polygon':  # any element after the first in a polygon specifies a "hole" 
-    return polygon_map(geom['coordinates'])
+    geom['coordinates'] = polygon_map(geom['coordinates'])
   elif geom['type'] == 'MultiPolygon':
-    return multiPolygon_map(geom['coordinates'])
+    geom['coordinates'] = multiPolygon_map(geom['coordinates'])
   elif geom['type'] == 'Point':
-    return conversion(geom['coordinates'])
+    geom['coordinates'] = conversion(geom['coordinates'])
   else:  # For the oa_boundaries geojson, every geom is either Polygon or MultiPolygon.
     raise NotImplementedError
+
+  return geom
 
 
 def create_connection(user, password, host, database, port=3306):
