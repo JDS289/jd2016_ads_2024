@@ -26,3 +26,12 @@ CREATE TABLE IF NOT EXISTS `census2021_ts062_oa` (
 
 
 conn.commit()"""
+
+
+
+"""
+%%sql
+USE ads_2024;
+
+ALTER TABLE census2021_ts062_oa ADD COLUMN boundary GEOMETRY;
+"""
