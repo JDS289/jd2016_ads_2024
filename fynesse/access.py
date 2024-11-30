@@ -7,6 +7,7 @@ import osmnx as ox
 from math import cos, radians
 import os
 import warnings
+from pyproj import Transformer
 
 """These are the types of import we might expect in this file
 import httplib2
@@ -25,7 +26,7 @@ NSSEC_key = {'l123': 'L1, L2 and L3 Higher managerial, administrative and profes
 
 def EsNs_to_LatLng(eastings_northings):  # this also rounds a tiny amount - my quick calculations suggest this loses < 5cm
     eastings, northings = eastings_northings
-    latLng = transformer.transform(eastings, northings)
+    latLng = Transformer.from_crs("epsg:27700", "epsg:4326", always_xy=True).transform(eastings, northings)
     return [round(latLng[1], 6), round(latLng[0], 6)]
 
 def deep_map_coord_conversion(conversion, geom):
