@@ -39,8 +39,23 @@ for oa in list(d.values())[2]:
 
 # remember polygons can contain "holes" (this is where len(coordinates) > 1; in most cases it's just "[[[..], ..., [..]]]")
 
-print(*list(d.values())[2][:100], sep="\n")
+"""print(*list(d.values())[2][:100], sep="\n")
 
 for oa in list(d.values())[2]:
   oa_code = oa['properties']['OA21CD']
-  geometry = oa['properties']['geometry']
+  geometry = oa['properties']['geometry']"""
+
+
+oa_boundaries = []
+
+for oa in list(d.values())[2]:
+  oa_boundaries.append((oa['properties']['OA21CD'],
+                        fynesse.access.deep_map_coord_conversion(fynesse.access.EsNs_to_LatLng, oa['geometry'])))
+
+df = pd.DataFrame(list(map(lambda t: [t[0], str(t[1]).replace("'", '"')], oa_boundaries)))
+file_path = 'oa_boundaries.csv'
+df.to_csv(file_path, index=False, header=False, quotechar="'")
+cur.execute(f"""LOAD DATA LOCAL INFILE 'oa_boundaries.csv' INTO TABLE `oa_boundaries` FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED by "'" LINES TERMINATED BY '\n' (@var1, @var2) SET oa = @var1, boundary = ST_GeomFromGeoJSON(@var2);""")
+conn.commit()
+
+# Then simply do a JOIN with census2021_ts062_oa
