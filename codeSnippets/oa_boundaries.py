@@ -55,7 +55,8 @@ for oa in list(d.values())[2]:
 df = pd.DataFrame(list(map(lambda t: [t[0], str(t[1]).replace("'", '"')], oa_boundaries)))
 file_path = 'oa_boundaries.csv'
 df.to_csv(file_path, index=False, header=False, quotechar="'")
-cur.execute(f"""LOAD DATA LOCAL INFILE 'oa_boundaries.csv' INTO TABLE `oa_boundaries` FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED by "'" LINES TERMINATED BY '\n' (@var1, @var2) SET oa = @var1, boundary = ST_GeomFromGeoJSON(@var2);""")
-conn.commit()
+# cur.execute(f"""LOAD DATA LOCAL INFILE 'oa_boundaries.csv' INTO TABLE `oa_boundaries` FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED by "'" LINES TERMINATED BY '\n' (@var1, @var2) SET oa = @var1, boundary = ST_GeomFromGeoJSON(@var2);""")
+# conn.commit()
+"""I have commented out the previous two lines in case this "code snippet" is accidentally run."""
 
 # Then simply do a JOIN with census2021_ts062_oa
