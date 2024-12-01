@@ -27,9 +27,7 @@ def EsNs_to_LatLng(eastings, northings):  # this also rounds a tiny amount - my 
     latLng = transformer.transform(eastings, northings)
     return [round(latLng[1], 6), round(latLng[0], 6)]
 
-all_polygons = []
 
-counter = 0
 for oa in list(d.values())[2]:
   if oa['geometry']['type'] == 'Polygon':
     oa['geometry']['coordinates'] = list(map(lambda ring: list(map(lambda pair: EsNs_to_LatLng(*pair), ring)), oa['geometry']['coordinates']))
@@ -38,12 +36,6 @@ for oa in list(d.values())[2]:
                                              oa['geometry']['coordinates']))
 
 # remember polygons can contain "holes" (this is where len(coordinates) > 1; in most cases it's just "[[[..], ..., [..]]]")
-
-"""print(*list(d.values())[2][:100], sep="\n")
-
-for oa in list(d.values())[2]:
-  oa_code = oa['properties']['OA21CD']
-  geometry = oa['properties']['geometry']"""
 
 
 oa_boundaries = []
