@@ -5,7 +5,6 @@ USE `ads_2024`;
 --
 -- Table structure for table `census2021_ts062_oa`
 --
-DROP TABLE IF EXISTS `census2021_ts062_oa`;
 CREATE TABLE IF NOT EXISTS `census2021_ts062_oa` (
   `geography` varchar(9) COLLATE utf8_bin NOT NULL,
   `total`     int(6) unsigned NOT NULL,
