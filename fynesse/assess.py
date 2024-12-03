@@ -10,6 +10,7 @@ import osmnx as ox
 import pandas as pd
 import matplotlib.pyplot as plt
 from scipy.stats import pearsonr
+from from sklearn.linear_model import LinearRegression
 import pymysql
 
 """These are the types of import we might expect in this file
@@ -39,6 +40,20 @@ def view(data):
 def labelled(data):
     """Provide a labelled set of data ready for supervised learning."""
     raise NotImplementedError
+
+
+def scatter(ax, predictions, actual, xlabel="", ylabel=""):
+    """`predictions` and `actual` should be DataFrames for now, please"""
+    
+    ax.scatter(predictions, actual)
+
+    tester_model = LinearRegression()
+    tester_fitted = tester_model.fit(predictions.to_numpy().reshape(-1, 1), actual.to_numpy())
+    m, c2 = tester_fitted.coef_[0], tester_fitted.intercept_
+    ax.plot([0, (max_f:=max(predictions))], [c2, m*max_f + c2], color="red")
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
+    ax.set_title(f"Correlation: {pearsonr(predictions, actual)[0]}", fontsize=10)
 
 
 
