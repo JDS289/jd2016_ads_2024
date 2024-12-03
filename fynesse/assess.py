@@ -10,7 +10,7 @@ import osmnx as ox
 import pandas as pd
 import matplotlib.pyplot as plt
 from scipy.stats import pearsonr
-from from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import LinearRegression
 import pymysql
 
 """These are the types of import we might expect in this file
