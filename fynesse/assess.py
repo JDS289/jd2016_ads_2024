@@ -10,8 +10,6 @@ import osmnx as ox
 import pandas as pd
 import geopandas as gpd
 import matplotlib.pyplot as plt
-from scipy.stats import pearsonr
-from sklearn.linear_model import LinearRegression
 import pymysql
 import shapely
 
@@ -24,21 +22,6 @@ def resultsToGDF(results, geomColumnName="geom"):
   geom = df.get(geomColumnName).apply(lambda geomString: shapely.from_wkt(geomString))
   df = df.drop(columns=[geomColumnName])
   return gpd.GeoDataFrame(df, geometry=geom).set_crs("EPSG:4326").to_crs(crs="EPSG:27700")
-
-
-def scatter(ax, predictions, actual, xlabel="", ylabel=""):
-    """`predictions` and `actual` should be DataFrames"""
-    
-    ax.scatter(predictions, actual)
-
-    tester_model = LinearRegression()
-    tester_fitted = tester_model.fit(predictions.to_numpy().reshape(-1, 1), actual.to_numpy())
-    m, c2 = tester_fitted.coef_[0], tester_fitted.intercept_
-    ax.plot([0, (max_f:=max(predictions))], [c2, m*max_f + c2], color="red")
-    ax.set_xlabel(xlabel)
-    ax.set_ylabel(ylabel)
-    ax.set_title(f"Correlation: {pearsonr(predictions, actual)[0]}", fontsize=10)
-
 
 
 def get_buildings(north, south, east, west):
