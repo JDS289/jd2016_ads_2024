@@ -12,7 +12,7 @@ import osmium
 from tqdm import tqdm
 import yaml
 import ipywidgets
-  interact_manual, Text, Password
+
 
 
 # This file accesses the data
