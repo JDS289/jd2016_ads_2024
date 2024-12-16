@@ -9,6 +9,8 @@ import os
 import warnings
 from pyproj import Transformer
 import osmium
+import tqdm
+
 
 # This file accesses the data
 
