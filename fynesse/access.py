@@ -169,7 +169,7 @@ def create_connection_default():
   url = credentials["url"]
   port = credentials["port"]
 
-  return create_connection(user, password, host=url, database, port)
+  return create_connection(user, password, url, database, port)
   
 
 
