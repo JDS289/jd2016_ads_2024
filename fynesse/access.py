@@ -9,22 +9,14 @@ import os
 import warnings
 from pyproj import Transformer
 
-"""These are the types of import we might expect in this file
-import httplib2
-import oauth2
-import tables
-import mongodb
-import sqlite"""
-
 # This file accesses the data
 
 """Place commands in this file to access the data electronically. Don't remove any missing values, or deal with outliers. Make sure you have legalities correct, both intellectual property and personal data privacy rights. Beyond the legal side also think about the ethical issues around this data. """
 
 
-NSSEC_key = {'l123': 'L1, L2 and L3 Higher managerial, administrative and professional occupations', 'l456': 'L4, L5 and L6 Lower managerial, administrative and professional occupations', 'l7': 'L7 Intermediate occupations', 'l89': 'L8 and L9 Small employers and own account workers', 'l1011': 'L10 and L11 Lower supervisory and technical occupations', 'l12': 'L12 Semi-routine occupations', 'l13': 'l13 Routine occupations', 'l14': 'L14.1 and L14.2 Never worked and long-term unemployed', 'l15': 'L15 Full-time students'}
 
-
-def EsNs_to_LatLng(eastings_northings):  # this also rounds a tiny amount - my quick calculations suggest this loses < 5cm
+def EsNs_to_LatLng(eastings_northings):
+    """Converts the coordinate-system of a point from Eastings-and-Northings to Latitude-and-Longitude."""
     if not hasattr(EsNs_to_LatLng, "transformer"):
         EsNs_to_LatLng.transformer = Transformer.from_crs("epsg:27700", "epsg:4326", always_xy=True)
     eastings, northings = eastings_northings
@@ -33,7 +25,8 @@ def EsNs_to_LatLng(eastings_northings):  # this also rounds a tiny amount - my q
 
 
 def deep_map_coord_conversion(conversion, geom):
-  # geom should be in geojson format
+  """Applies a coordinate conversion all the way through a nested data structure.
+     Geom should be in geojson format."""
   def ring_map(ring):
     return list(map(lambda pair: conversion(pair), ring))
   
@@ -80,11 +73,15 @@ def create_connection(user, password, host, database, port=3306):
     return conn
 
 
+NSSEC_key = {'l123': 'L1, L2 and L3 Higher managerial, administrative and professional occupations', 'l456': 'L4, L5 and L6 Lower managerial, administrative and professional occupations', 'l7': 'L7 Intermediate occupations', 'l89': 'L8 and L9 Small employers and own account workers', 'l1011': 'L10 and L11 Lower supervisory and technical occupations', 'l12': 'L12 Semi-routine occupations', 'l13': 'l13 Routine occupations', 'l14': 'L14.1 and L14.2 Never worked and long-term unemployed', 'l15': 'L15 Full-time students'}
+
+
 def make_box(centre_lat, centre_lon, side_length): # side_length in km; returns lat_high, lat_low, lon_high, lon_low
   # note that we additionally divide by two (hence using 222 not 111) because side_length is 2*(distance from centre to side)
   lon_factor = 222*cos(radians(centre_lat))
   return (centre_lat + side_length/222,        centre_lat - side_length/222,
           centre_lon + side_length/lon_factor, centre_lon - side_length/lon_factor)
+
 
 def count_pois_near_coordinates(latitude: float, longitude: float, tags: dict, distance_km: float = 1.0) -> dict:  # maybe move to assess
     """
@@ -113,7 +110,6 @@ def count_pois_near_coordinates(latitude: float, longitude: float, tags: dict, d
     return poi_dict
 
 
-
 def download_csv(url):
   """Downloads a CSV file from the given URL and returns the path to the downloaded file."""
   counter = 1
@@ -125,9 +121,6 @@ def download_csv(url):
     file.write(requests.get(url).content)
 
   return file.name
-
-
-
 
 
 def download_price_paid_data(year_from, year_to):
@@ -166,12 +159,3 @@ def housing_upload_join_data(conn, year):
   cur.execute(f"LOAD DATA LOCAL INFILE '" + csv_file_path + "' INTO TABLE `prices_coordinates_data` FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED by '\"' LINES STARTING BY '' TERMINATED BY '\n';")
   conn.commit()
   print('Data stored for year: ' + str(year))
-
-
-def data():
-    """Read the data from the web or local file, returning structured format such as a data frame"""
-    raise NotImplementedError
-
-
-def hello_world():
-  print("Hello from the data science library!")
