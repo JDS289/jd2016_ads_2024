@@ -1,4 +1,3 @@
-from .config import *
 import requests
 import pymysql
 import csv
