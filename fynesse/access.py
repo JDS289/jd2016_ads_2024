@@ -10,6 +10,9 @@ import warnings
 from pyproj import Transformer
 import osmium
 from tqdm import tqdm
+import yaml
+import ipywidgets
+  interact_manual, Text, Password
 
 
 # This file accesses the data
@@ -81,6 +84,7 @@ def EsNs_to_LatLng(eastings_northings):
     return [round(latLng[1], 6), round(latLng[0], 6)]
 
 
+
 def deep_map_coord_conversion(conversion, geom):
   """Applies a coordinate conversion all the way through a nested data structure.
      Geom should be in geojson format."""
@@ -105,32 +109,78 @@ def deep_map_coord_conversion(conversion, geom):
   return geom
 
 
+
 def create_connection(user, password, host, database, port=3306):
-    """ Create a database connection to the MariaDB database
-        specified by the host url and database name.
-    :param user: username
-    :param password: password
-    :param host: host url
-    :param database: database name
-    :param port: port number
-    :return: Connection object or None
-    """
-    conn = None
-    try:
-        conn = pymysql.connect(user=user,
-                               passwd=password,
-                               host=host,
-                               port=port,
-                               local_infile=1,
-                               db=database
-                               )
-        print(f"Connection established!")
-    except Exception as e:
-        print(f"Error connecting to the MariaDB Server: {e}")
-    return conn
+  """ Create a database connection to the MariaDB database
+      specified by the host url and database name.
+      :param user: username
+      :param password: password
+      :param host: host url
+      :param database: database name
+      :param port: port number
+      :return: Connection object or None
+  """
+  print("Note that create_connection_default() can instead be called.\n")
+  conn = None
+  try:
+    conn = pymysql.connect(user=user,
+                           passwd=password,
+                           host=host,
+                           port=port,
+                           local_infile=1,
+                           db=database
+                           )
+    print(f"Connection established!")
+  except Exception as e:
+    print(f"Error connecting to the MariaDB Server: {e}")
+  return conn
 
 
-NSSEC_key = {'l123': 'L1, L2 and L3 Higher managerial, administrative and professional occupations', 'l456': 'L4, L5 and L6 Lower managerial, administrative and professional occupations', 'l7': 'L7 Intermediate occupations', 'l89': 'L8 and L9 Small employers and own account workers', 'l1011': 'L10 and L11 Lower supervisory and technical occupations', 'l12': 'L12 Semi-routine occupations', 'l13': 'l13 Routine occupations', 'l14': 'L14.1 and L14.2 Never worked and long-term unemployed', 'l15': 'L15 Full-time students'}
+
+# Only needs to be called once
+@ipywidgets.interact_manual(username=ipywidgets.Text(description="Username:"),
+                            password=ipywidgets.Password(description="Password:"),
+                                 url=ipywidgets.Text(description="URL:"),
+                            database=ipywidgets.Text(description="Database:"),
+                                port=ipywidgets.Text(description="Port:"))
+def write_credentials(username, password, url, database, port):
+    with open("credentials.yaml", "w") as file:
+        credentials_dict = {'username': username,
+                           'password' : password,
+                           'url'      : url,
+                           'database' : database,
+                           'port'     : port}
+        yaml.dump(credentials_dict, file)
+
+
+
+def create_connection_default():
+  """A simplified version of create_connection(...) that automatically specifies the parameters based on a credentials.yaml file"""
+
+  if not os.path.exists("credentials.yaml"):
+    print(f"Please initialise credentials.yaml first, such as by using write_credentials(...)")
+    return None
+    
+  with open("credentials.yaml") as file:
+    credentials = yaml.safe_load(file)
+  username = credentials["username"]
+  password = credentials["password"]
+  database = credentials["database"]
+  url = credentials["url"]
+  port = credentials["port"]
+
+  return create_connection(user, password, host=url, database, port)
+  
+
+
+NSSEC_key = {"l123"  : "L1, L2 and L3 Higher managerial, administrative and professional occupations",
+             "l456"  : "L4, L5 and L6 Lower managerial, administrative and professional occupations",
+             "l7"    : "L7 Intermediate occupations', 'l89': 'L8 and L9 Small employers and own account workers",
+             "l1011" : "L10 and L11 Lower supervisory and technical occupations",
+             "l12"   : "L12 Semi-routine occupations",
+             "l13"   : "l13 Routine occupations",
+             "l14"   : "L14.1 and L14.2 Never worked and long-term unemployed",
+             "l15"   : "L15 Full-time students"}
 
 
 def make_box(centre_lat, centre_lon, side_length): # side_length in km; returns lat_high, lat_low, lon_high, lon_low
@@ -141,30 +191,30 @@ def make_box(centre_lat, centre_lon, side_length): # side_length in km; returns 
 
 
 def count_pois_near_coordinates(latitude: float, longitude: float, tags: dict, distance_km: float = 1.0) -> dict:  # maybe move to assess
-    """
-    Count Points of Interest (POIs) near a given pair of coordinates within a specified distance.
-    Args:
-        latitude (float): Latitude of the location.
-        longitude (float): Longitude of the location.
-        tags (dict): A dictionary of OSM tags to filter the POIs (e.g., {'amenity': True, 'tourism': True}).
-        distance_km (float): The distance around the location in kilometers. Default is 1 km.
-    Returns:
-        dict: A dictionary where keys are the OSM tags and values are the counts of POIs for each tag.
-    """
+  """
+  Count Points of Interest (POIs) near a given pair of coordinates within a specified distance.
+  Args:
+    latitude (float): Latitude of the location.
+    longitude (float): Longitude of the location.
+    tags (dict): A dictionary of OSM tags to filter the POIs (e.g., {'amenity': True, 'tourism': True}).
+    distance_km (float): The distance around the location in kilometers. Default is 1 km.
+  Returns:
+    dict: A dictionary where keys are the OSM tags and values are the counts of POIs for each tag.
+  """
 
-    poi_dict = {}
-    north, south, east, west = make_box(latitude, longitude, distance_km*2)
-    for tag_key, tag_val in tags.items():  # NOTE: I believe {some_tag: True} matches any non-null value, and {some_tag: some_list} matches where the val is in some_list
-      try:
-        with warnings.catch_warnings():
-          warnings.simplefilter("ignore")
-          count = len(ox.geometries_from_bbox(north, south, east, west, {tag_key: tag_val}).index)
-      except ox._errors.InsufficientResponseError:
-        count = 0
+  poi_dict = {}
+  north, south, east, west = make_box(latitude, longitude, distance_km*2)
+  for tag_key, tag_val in tags.items():  # NOTE: I believe {some_tag: True} matches any non-null value, and {some_tag: some_list} matches where the val is in some_list
+    try:
+      with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        count = len(ox.geometries_from_bbox(north, south, east, west, {tag_key: tag_val}).index)
+    except ox._errors.InsufficientResponseError:
+      count = 0
 
-      poi_dict[tag_key] = count
+    poi_dict[tag_key] = count
 
-    return poi_dict
+  return poi_dict
 
 
 def download_csv(url):
@@ -181,19 +231,19 @@ def download_csv(url):
 
 
 def download_price_paid_data(year_from, year_to):
-    # Base URL where the dataset is stored 
-    base_url = "http://prod.publicdata.landregistry.gov.uk.s3-website-eu-west-1.amazonaws.com"
-    """Download UK house price data for given year range"""
-    # File name with placeholders
-    file_name = "/pp-<year>-part<part>.csv"
-    for year in range(year_from, (year_to+1)):
-        print (f"Downloading data for year: {year}")
-        for part in range(1,3):
-            url = base_url + file_name.replace("<year>", str(year)).replace("<part>", str(part))
-            response = requests.get(url)
-            if response.status_code == 200:
-                with open("." + file_name.replace("<year>", str(year)).replace("<part>", str(part)), "wb") as file:
-                    file.write(response.content)
+  # Base URL where the dataset is stored 
+  base_url = "http://prod.publicdata.landregistry.gov.uk.s3-website-eu-west-1.amazonaws.com"
+  """Download UK house price data for given year range"""
+  # File name with placeholders
+  file_name = "/pp-<year>-part<part>.csv"
+  for year in range(year_from, (year_to+1)):
+    print (f"Downloading data for year: {year}")
+    for part in range(1,3):
+      url = base_url + file_name.replace("<year>", str(year)).replace("<part>", str(part))
+      response = requests.get(url)
+      if response.status_code == 200:
+        with open("." + file_name.replace("<year>", str(year)).replace("<part>", str(part)), "wb") as file:
+          file.write(response.content)
 
 
 def housing_upload_join_data(conn, year):
