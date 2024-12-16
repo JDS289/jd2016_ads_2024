@@ -16,12 +16,67 @@ import shapely
 """Place commands in this file to assess the data you have downloaded. How are missing values encoded, how are outliers encoded? What do columns represent, makes rure they are correctly labeled. How is the data indexed. Crete visualisation routines to assess the data (e.g. in bokeh). Ensure that date formats are correct and correctly timezoned."""
 
 
+
+def get_locations(source, tags):
+  """Returns a list of (lat, lon) of objects from source (.osm.pbf) that have any the given tags.
+     Successful for correctly-labeled nodes, ways, and multipolygon relations.
+     Selects the location of an arbitrary node on the border; do not use if very high accuracy needed,
+     or for very large areas; but completely sufficient for these purposes."""
+  
+  fp = osmium.FileProcessor(source).with_filter(osmium.filter.TagFilter(*tags.items()))
+  filtered_path = "filtered.osm.pbf"
+
+  with osmium.BackReferenceWriter(filtered_path, ref_src=source, overwrite=True) as writer:
+    for obj in tqdm(fp):
+      writer.add(obj)
+
+  fp = osmium.FileProcessor(filtered_path).with_locations()
+  locations = set()
+  way_locations = {}
+
+  for obj in fp:
+    if not(obj.tags) or all(obj.tags.get(key) != value for key, value in dict(tags).items()):
+      if obj.is_way():
+        way_locations[obj.id] = (obj.nodes[0].lat, obj.nodes[0].lon)
+      elif obj.is_relation():
+        print(f"Ignored this Relation: probably part of a non-Multipolygon relation: {obj}")
+      continue
+
+    if obj.is_node():
+      locations.add((obj.lat, obj.lon))
+
+    if obj.is_way():
+      first_node = obj.nodes[0]
+      way_locations[obj.id] = (first_node.lat, first_node.lon)
+      obj_locs = set((node.lat, node.lon) for node in obj.nodes)
+      if locations & obj_locs:
+        # some sub-nodes (probably mistakenly tagged) already added; let's fix:
+        locations -= obj_locs
+      locations.add((first_node.lat, first_node.lon))
+
+    elif obj.is_relation():
+      if obj.tags["type"] != "multipolygon":
+        # While there were a couple of University accommodations with type:site, this is uncommon and poorly documented,
+        # so I'm choosing to omit these (and they make up less than <0.3%).
+        continue
+      
+      obj_way_locs = set(way_locations[mem.ref] for mem in obj.members)
+      if locations & obj_way_locs:
+        # some sub-ways (probably mistakenly tagged) already added; let's fix:
+        locations -= obj_way_locs
+      locations.add(way_locations[list(obj.members)[0].ref])
+
+  return locations
+
+
+
 def resultsToGDF(results, geomColumnName="geom"):
   # from the results of an SQL query; and transforms to UK metres coordinates
   df = gpd.GeoDataFrame(results)
   geom = df.get(geomColumnName).apply(lambda geomString: shapely.from_wkt(geomString))
   df = df.drop(columns=[geomColumnName])
   return gpd.GeoDataFrame(df, geometry=geom).set_crs("EPSG:4326").to_crs(crs="EPSG:27700")
+
 
 
 def get_buildings(north, south, east, west):
@@ -36,7 +91,8 @@ def get_buildings(north, south, east, west):
   return buildings[["addr:housenumber", "addr:street", "addr:postcode", "full_addr", "area", "geometry"]]
 
 
-def plot(north, south, east, west, buildings):
+
+def plot_buildings(north, south, east, west, buildings):
   fig, ax = plt.subplots()
   with warnings.catch_warnings():
     warnings.simplefilter("ignore")
@@ -61,10 +117,8 @@ def plot(north, south, east, west, buildings):
     ax.fill(*coords, color="green" if buildings.iloc[i].get("full_addr") else "red")
 
 
-def merge_with_prices(addressed_buildings): # this mutates the input, so there is no return
 
-  #access.initialise_sql()
-  #%load_ext sql
+def merge_with_prices(addressed_buildings): # this mutates the input, so there is no return
   conn = access.create_connection("admin", "ayT2adBkqim", "database-ads-jd2016.cgrre17yxw11.eu-west-2.rds.amazonaws.com", "ads_2024")
   cur = conn.cursor()
   price_column = [np.NaN]*len(addressed_buildings.index)
@@ -100,23 +154,3 @@ def merge_with_prices(addressed_buildings): # this mutates the input, so there i
   new_columns = list(addressed_buildings.columns)
   new_columns[-1], new_columns[-2] = new_columns[-2], new_columns[-1]
   addressed_buildings = addressed_buildings.reindex(columns=new_columns)
-
-
-
-def price_area_correlation(latitude, longitude, box_size=2, scatter_plot=False):
-  north, south, east, west = access.make_box(latitude, longitude, box_size)
-  buildings = get_buildings(north, south, east, west)
-  plot(north, south, east, west, buildings)
-  addressed_buildings = buildings[buildings["full_addr"]==True][["addr:housenumber", "addr:street", "addr:postcode", "area", "geometry"]]
-  merge_with_prices(addressed_buildings)
-  pna_buildings = addressed_buildings[addressed_buildings["price"].notnull()]
-  if len(pna_buildings.index) < 2:
-    return "Not enough data (less than 2 relevant samples)"
-  area, price = list(pna_buildings.get("area")), list(pna_buildings.get("price"))
-  if scatter_plot:
-      fig, ax = plt.subplots()
-      ax.set_xlabel("area")
-      ax.set_ylabel("price")
-      plt.scatter(area, price)
-  return pearsonr(area, price)
-
