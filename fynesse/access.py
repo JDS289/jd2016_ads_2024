@@ -8,6 +8,7 @@ from math import cos, radians
 import os
 import warnings
 from pyproj import Transformer
+import osmium
 
 # This file accesses the data
 
