@@ -65,7 +65,7 @@ def get_locations(source, tags):
         locations -= obj_way_locs
       locations.add(way_locations[list(obj.members)[0].ref])
 
-  return locations
+  return list(locations)
 
 
 
