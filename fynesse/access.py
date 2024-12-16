@@ -15,6 +15,60 @@ from pyproj import Transformer
 
 
 
+
+def get_locations(source, tags):
+  """Returns a list of (lat, lon) of objects from source (.osm.pbf) that have any the given tags.
+     Successful for correctly-labeled nodes, ways, and multipolygon relations.
+     Selects the location of an arbitrary node on the border; do not use if very high accuracy needed,
+     or for very large areas; but completely sufficient for these purposes."""
+  
+  fp = osmium.FileProcessor(source).with_filter(osmium.filter.TagFilter(*tags.items()))
+  filtered_path = "filtered.osm.pbf"
+
+  with osmium.BackReferenceWriter(filtered_path, ref_src=source, overwrite=True) as writer:
+    for obj in tqdm(fp):
+      writer.add(obj)
+
+  fp = osmium.FileProcessor(filtered_path).with_locations()
+  locations = set()
+  way_locations = {}
+
+  for obj in fp:
+    if not(obj.tags) or all(obj.tags.get(key) != value for key, value in dict(tags).items()):
+      if obj.is_way():
+        way_locations[obj.id] = (obj.nodes[0].lat, obj.nodes[0].lon)
+      elif obj.is_relation():
+        print(f"Ignored this Relation: probably part of a non-Multipolygon relation: {obj}")
+      continue
+
+    if obj.is_node():
+      locations.add((obj.lat, obj.lon))
+
+    if obj.is_way():
+      first_node = obj.nodes[0]
+      way_locations[obj.id] = (first_node.lat, first_node.lon)
+      obj_locs = set((node.lat, node.lon) for node in obj.nodes)
+      if locations & obj_locs:
+        # some sub-nodes (probably mistakenly tagged) already added; let's fix:
+        locations -= obj_locs
+      locations.add((first_node.lat, first_node.lon))
+
+    elif obj.is_relation():
+      if obj.tags["type"] != "multipolygon":
+        # While there were a couple of University accommodations with type:site, this is uncommon and poorly documented,
+        # so I'm choosing to omit these (and they make up less than <0.3%).
+        continue
+      
+      obj_way_locs = set(way_locations[mem.ref] for mem in obj.members)
+      if locations & obj_way_locs:
+        # some sub-ways (probably mistakenly tagged) already added; let's fix:
+        locations -= obj_way_locs
+      locations.add(way_locations[list(obj.members)[0].ref])
+
+  return locations
+
+
+
 def EsNs_to_LatLng(eastings_northings):
     """Converts the coordinate-system of a point from Eastings-and-Northings to Latitude-and-Longitude."""
     if not hasattr(EsNs_to_LatLng, "transformer"):
