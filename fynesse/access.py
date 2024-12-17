@@ -21,16 +21,17 @@ import yaml
 
 def load_magic_sql():
   try:
+    from google.colab import userdata
     from IPython.core.interactiveshell import InteractiveShell
     shell = InteractiveShell.instance()
-    shell.run_line_magic("load_ext", "sql")
-    shell.run_line_magic("load_ext", "sql")
-    #%pip install pymysql
-    shell.run_line_magic("sql", f"mariadb+pymysql://admin:{userdata.get('password')}@database-ads-jd2016.cgrre17yxw11.eu-west-2.rds.amazonaws.com?local_infile=1")
-    shell.run_line_magic("config", "SqlMagic.style = '_DEPRECATED_DEFAULT'")
-    shell.run_line_magic("sql", "USE ads_2024")
-  except:
-    print("Please run on Google Colab if intending to use magic sql commands.")
+  except Exception as e:
+    print(f"Failed (make sure you're on Colab) with the following error message:\n{e}")
+  
+  shell.run_line_magic("load_ext", "sql")
+  #%pip install pymysql
+  shell.run_line_magic("sql", f"mariadb+pymysql://admin:{userdata.get('password')}@database-ads-jd2016.cgrre17yxw11.eu-west-2.rds.amazonaws.com?local_infile=1")
+  shell.run_line_magic("config", "SqlMagic.style = '_DEPRECATED_DEFAULT'")
+  shell.run_line_magic("sql", "USE ads_2024")
 
 
 
