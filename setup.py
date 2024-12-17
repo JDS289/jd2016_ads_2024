@@ -21,7 +21,6 @@ from setuptools import find_packages, setup, Command
 NAME = "fynesse"
 DESCRIPTION = "Files for performing fynesse pipeline data analysis with python."
 URL = "https://github.com/JDS289/jd2016_ads_2024/"
-EMAIL = "emal@domain.here" # omitted deliberately
 AUTHOR = "Joe de Souza"
 REQUIRES_PYTHON = ">=3.6.0"
 VERSION = "0.1.0"
