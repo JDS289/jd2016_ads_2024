@@ -10,9 +10,6 @@ from pyproj import Transformer
 import osmium
 from tqdm import tqdm
 import yaml
-import ipywidgets
-from google.colab import userdata
-from IPython.core.interactiveshell import InteractiveShell
 
 
 
@@ -23,13 +20,17 @@ from IPython.core.interactiveshell import InteractiveShell
 
 
 def load_magic_sql():
-  shell = InteractiveShell.instance()
-  shell.run_line_magic("load_ext", "sql")
-  shell.run_line_magic("load_ext", "sql")
-  #%pip install pymysql
-  shell.run_line_magic("sql", "mariadb+pymysql://admin:{userdata.get('password')}@database-ads-jd2016.cgrre17yxw11.eu-west-2.rds.amazonaws.com?local_infile=1")
-  shell.run_line_magic("config", "SqlMagic.style = '_DEPRECATED_DEFAULT'")
-  shell.run_line_magic("sql", "USE ads_2024")
+  try:
+    from IPython.core.interactiveshell import InteractiveShell
+    shell = InteractiveShell.instance()
+    shell.run_line_magic("load_ext", "sql")
+    shell.run_line_magic("load_ext", "sql")
+    #%pip install pymysql
+    shell.run_line_magic("sql", f"mariadb+pymysql://admin:{userdata.get('password')}@database-ads-jd2016.cgrre17yxw11.eu-west-2.rds.amazonaws.com?local_infile=1")
+    shell.run_line_magic("config", "SqlMagic.style = '_DEPRECATED_DEFAULT'")
+    shell.run_line_magic("sql", "USE ads_2024")
+  except:
+    print("Please run on Google Colab if intending to use magic sql commands.")
 
 
 
@@ -148,39 +149,11 @@ def create_connection(user, password, host, database, port=3306):
 
 
 
-# Only needs to be called once
-@ipywidgets.interact_manual(username=ipywidgets.Text(description="Username:"),
-                            password=ipywidgets.Password(description="Password:"),
-                                 url=ipywidgets.Text(description="URL:"),
-                            database=ipywidgets.Text(description="Database:"),
-                                port=ipywidgets.Text(description="Port:"))
-def write_credentials(username, password, url, database, port):
-    with open("credentials.yaml", "w") as file:
-        credentials_dict = {'username': username,
-                           'password' : password,
-                           'url'      : url,
-                           'database' : database,
-                           'port'     : port}
-        yaml.dump(credentials_dict, file)
-
-
 
 def create_connection_default():
   """A simplified version of create_connection(...) that automatically specifies the parameters based on a credentials.yaml file"""
 
-  if not os.path.exists("credentials.yaml"):
-    print(f"Please initialise credentials.yaml first, such as by using write_credentials(...)")
-    return None
-    
-  with open("credentials.yaml") as file:
-    credentials = yaml.safe_load(file)
-  username = credentials["username"]
-  password = credentials["password"]
-  database = credentials["database"]
-  url = credentials["url"]
-  port = credentials["port"]
-
-  return create_connection(user, password, url, database, port)
+  return create_connection("admin", password, "database-ads-jd2016.cgrre17yxw11.eu-west-2.rds.amazonaws.com", database)
   
 
 
