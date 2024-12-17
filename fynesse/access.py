@@ -11,6 +11,9 @@ import osmium
 from tqdm import tqdm
 import yaml
 import ipywidgets
+from google.colab import userdata
+from IPython.core.interactiveshell import InteractiveShell
+
 
 
 
@@ -18,6 +21,15 @@ import ipywidgets
 
 """Place commands in this file to access the data electronically. Don't remove any missing values, or deal with outliers. Make sure you have legalities correct, both intellectual property and personal data privacy rights. Beyond the legal side also think about the ethical issues around this data. """
 
+
+def load_magic_sql():
+  shell = InteractiveShell.instance()
+  shell.run_line_magic("load_ext", "sql")
+  shell.run_line_magic("load_ext", "sql")
+  #%pip install pymysql
+  shell.run_line_magic("sql", "mariadb+pymysql://admin:{userdata.get('password')}@database-ads-jd2016.cgrre17yxw11.eu-west-2.rds.amazonaws.com?local_infile=1")
+  shell.run_line_magic("config", "SqlMagic.style = '_DEPRECATED_DEFAULT'")
+  shell.run_line_magic("sql", "USE ads_2024")
 
 
 
