@@ -133,7 +133,7 @@ def create_connection(user, password, host, database, port=3306):
       :param port: port number
       :return: Connection object or None
   """
-  print("Note that create_connection_default() can instead be called.\n")
+
   conn = None
   try:
     conn = pymysql.connect(user=user,
