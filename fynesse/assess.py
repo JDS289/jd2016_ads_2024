@@ -30,17 +30,19 @@ def resultsToGDF(results, geomColumnName="geom", flip_lat_lon=False):
 
 
 def load_oa_features(conn, columns):
-  """Returns a GeoDataFrame of ([oa_code, column1, column2..., boundary_geom], ...) where at least one specified column is neither null nor zero."""
+   """Returns a GeoDataFrame of ([oa_code, total, l15, prop_moved, column1, column2..., boundary_geom], ...)
+     where at least one specified column is neither null nor zero."""
 
   if not columns:
     print("Please choose some features to select.")
     return -1
 
   cur = conn.cursor()
-  results = cur.execute(f"SELECT oa, ST_AsText(boundary),{','.join(columns)} FROM census2021_ts062_oa WHERE {' OR '.join(f'({column} IS NOT NULL AND {column} != 0)' for column in columns)}")
-  results_df = gpd.GeoDataFrame(cur.fetchall(), columns=["oa_code", "boundary"]+columns).set_index("oa_code")
+  results = cur.execute(f"""SELECT oa,ST_AsText(boundary),total,l15,prop_moved,{','.join(columns)} FROM census2021_ts062_oa
+                            WHERE {' OR '.join(f'({column} IS NOT NULL AND {column} != 0)' for column in columns)}""")
+  gdf = gpd.GeoDataFrame(cur.fetchall(), columns=["oa_code","boundary","total","l15","prop_moved"]+columns).set_index("oa_code")
 
-  return resultsToGDF(results_df, geomColumnName="boundary", flip_lat_lon=True)
+  return resultsToGDF(gdf, geomColumnName="boundary", flip_lat_lon=True)
 
 
 def get_buildings(north, south, east, west):
