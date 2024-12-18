@@ -87,6 +87,25 @@ def get_locations(source, tags):
   return list(locations)
 
 
+def electionResults_to_GreenProportion(path):
+  # For a CommonsLibrary election-results-by-constituency CSV
+
+  with open(path) as f:
+    df = pd.read_csv(f).drop(columns=["ONS region ID", "County name", "Country name", "Result", "Majority", "First party",
+                                      "Second party", "Electorate", "Invalid votes", "Constituency type", "Declaration time",
+                                      "Member first name", "Member surname", "Member gender", "Region name", "Con", "Lab", "LD",
+                                      "UKIP", "SNP", "PC", "DUP", "SF", "SDLP", "UUP", "UUP (as UCUNF)", "APNI",
+                                      "All other candidates", "Of which other winner", "RUK", "BRX"], errors="ignore")
+    def to_num(numString):
+      if type(numString) == str:
+        return int(numString.replace(",", ""))
+      else:
+        return numString  # already an int
+    df["green_proportion"] = df["Green"].apply(to_num) / df["Valid votes"].apply(to_num)
+    df = df.drop(columns=["Green", "Valid votes"])
+    return df
+
+
 
 def EsNs_to_LatLng(eastings_northings):
     """Converts the coordinate-system of a point from Eastings-and-Northings to Latitude-and-Longitude."""
