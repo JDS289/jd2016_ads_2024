@@ -22,7 +22,8 @@ def resultsToGDF(results, geomColumnName="geom", flip_lat_lon=False):
   """Constructs a GeoDataFrame from the results of an SQL query; and transforms to UK metres coordinates"""
   gdf = gpd.GeoDataFrame(results)
   if flip_lat_lon:
-    gdf[geomColumnName] = gdf[geomColumnName].apply(lambda geomString: shapely.ops.transform(lambda x, y: (y, x), shapely.from_wkt(geomString)))
+    gdf[geomColumnName] = gdf[geomColumnName].apply(lambda geomString:
+                                                      shapely.ops.transform(lambda x, y: (y, x), shapely.from_wkt(geomString)))
   else:
     gdf[geomColumnName] = gdf[geomColumnName].apply(lambda geomString: shapely.from_wkt(geomString))
   return gdf.set_geometry(geomColumnName).set_crs("EPSG:4326").to_crs(crs="EPSG:27700")
