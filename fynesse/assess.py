@@ -30,7 +30,7 @@ def resultsToGDF(results, geomColumnName="geom", flip_lat_lon=False):
 
 
 def load_oa_features(conn, columns):
-   """Returns a GeoDataFrame of ([oa_code, total, l15, prop_moved, column1, column2..., boundary_geom], ...)
+  """Returns a GeoDataFrame of ([oa_code, total, l15, prop_moved, column1, column2..., boundary_geom], ...)
      where at least one specified column is neither null nor zero."""
 
   if not columns:
