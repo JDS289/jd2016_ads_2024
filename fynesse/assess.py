@@ -40,7 +40,7 @@ def load_oa_features(conn, columns):
   results = cur.execute(f"SELECT oa, ST_AsText(boundary),{','.join(columns)} FROM census2021_ts062_oa WHERE {' OR '.join(f'({column} IS NOT NULL AND {column} != 0)' for column in columns)}")
   results_df = gpd.GeoDataFrame(cur.fetchall(), columns=["oa_code", "boundary"]+columns).set_index("oa_code")
 
-  return fynesse.assess.resultsToGDF(results_df, geomColumnName="boundary", flip_lat_lon=True)
+  return resultsToGDF(results_df, geomColumnName="boundary", flip_lat_lon=True)
 
 
 def get_buildings(north, south, east, west):
