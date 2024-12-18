@@ -25,7 +25,7 @@ def load_magic_sql():
     from IPython.core.interactiveshell import InteractiveShell
     shell = InteractiveShell.instance()
   except Exception as e:
-    print(f"Failed (make sure you're on Colab) with the following error message:\n{e}")
+    print(f"Failed (make sure you're on Colab) with the following exception:\n{e}")
   
   shell.run_line_magic("load_ext", "sql")
   #%pip install pymysql
@@ -152,9 +152,14 @@ def create_connection(user, password, host, database, port=3306):
 
 
 def create_connection_default():
-  """A simplified version of create_connection(...) that automatically specifies the parameters based on a credentials.yaml file"""
+  """A simplified version of create_connection(...) that automatically specifies the parameters;
+     retrieves password from a Colab Secret."""
 
-  return create_connection("admin", password, "database-ads-jd2016.cgrre17yxw11.eu-west-2.rds.amazonaws.com", database)
+  try:
+    from google.colab import userdata
+  except Exception as e:
+    print(f"Failed (make sure you're running this on Colab!) with the following exception:\n{e}")
+  return create_connection("admin", userdata.get("password"), "database-ads-jd2016.cgrre17yxw11.eu-west-2.rds.amazonaws.com", database)
   
 
 
