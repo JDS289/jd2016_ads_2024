@@ -18,16 +18,19 @@ Crete visualisation routines to assess the data (e.g. in bokeh).Ensure that date
 
 
 
-def resultsToGDF(results, geomColumnName="geom"):
+def resultsToGDF(results, geomColumnName="geom", flip_lat_lon=False):
   """Constructs a GeoDataFrame from the results of an SQL query; and transforms to UK metres coordinates"""
   df = gpd.GeoDataFrame(results)
-  geom = df.get(geomColumnName).apply(lambda geomString: shapely.from_wkt(geomString))
+  if flip_lat_lon:
+    geom = df.get(geomColumnName).apply(lambda geomString: shapely.ops.transform(lambda x, y: (y, x), shapely.from_wkt(geomString)))
+  else:
+    geom = df.get(geomColumnName).apply(lambda geomString: shapely.from_wkt(geomString))
   df = df.drop(columns=[geomColumnName])
   return gpd.GeoDataFrame(df, geometry=geom).set_crs("EPSG:4326").to_crs(crs="EPSG:27700")
 
 
 def load_oa_features(conn, columns):
-  """Returns a GeoDataFrame of ([oa_code, boundary_geom, column1, column2...], ...) where at least one specified column is neither null nor zero."""
+  """Returns a GeoDataFrame of ([oa_code, column1, column2..., boundary_geom], ...) where at least one specified column is neither null nor zero."""
 
   if not columns:
     print("Please choose some features to select.")
@@ -35,9 +38,9 @@ def load_oa_features(conn, columns):
 
   cur = conn.cursor()
   results = cur.execute(f"SELECT oa, ST_AsText(boundary),{','.join(columns)} FROM census2021_ts062_oa WHERE {' OR '.join(f'({column} IS NOT NULL AND {column} != 0)' for column in columns)}")
-  oa_feature_df = gpd.GeoDataFrame(cur.fetchall(), columns=["oa_code", "boundary"]+columns).set_index("oa_code")
+  results_df = gpd.GeoDataFrame(cur.fetchall(), columns=["oa_code", "boundary"]+columns).set_index("oa_code")
 
-  return fynesse.assess.resultsToGDF(oa_feature_df, geomColumnName="boundary")
+  return fynesse.assess.resultsToGDF(results_df, geomColumnName="boundary", flip_lat_lon=True)
 
 
 def get_buildings(north, south, east, west):
