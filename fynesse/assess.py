@@ -20,13 +20,14 @@ Crete visualisation routines to assess the data (e.g. in bokeh).Ensure that date
 
 def resultsToGDF(results, geomColumnName="geom", flip_lat_lon=False):
   """Constructs a GeoDataFrame from the results of an SQL query; and transforms to UK metres coordinates"""
-  df = gpd.GeoDataFrame(results)
+  gdf = gpd.GeoDataFrame(results)
   if flip_lat_lon:
-    geom = df.get(geomColumnName).apply(lambda geomString: shapely.ops.transform(lambda x, y: (y, x), shapely.from_wkt(geomString)))
+    gdf[geomColumnName] = gdf[geomColumnName].apply(lambda geomString: shapely.ops.transform(lambda x, y: (y, x), shapely.from_wkt(geomString)))
   else:
-    geom = df.get(geomColumnName).apply(lambda geomString: shapely.from_wkt(geomString))
-  df = df.drop(columns=[geomColumnName])
-  return gpd.GeoDataFrame(df, geometry=geom).set_crs("EPSG:4326").to_crs(crs="EPSG:27700")
+    gdf[geomColumnName] = gdf[geomColumnName].apply(lambda geomString: shapely.from_wkt(geomString))
+  #df = df.drop(columns=[geomColumnName])
+  #return gpd.GeoDataFrame(df, geometry=geom).set_crs("EPSG:4326").to_crs(crs="EPSG:27700")
+  return gdf.set_geometry(geomColumnName).set_crs("EPSG:4326").to_crs(crs="EPSG:27700")
 
 
 def load_oa_features(conn, columns):
