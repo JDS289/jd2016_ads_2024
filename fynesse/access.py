@@ -159,7 +159,7 @@ def create_connection_default():
     from google.colab import userdata
   except Exception as e:
     print(f"Failed (make sure you're running this on Colab!) with the following exception:\n{e}")
-  return create_connection("admin", userdata.get("password"), "database-ads-jd2016.cgrre17yxw11.eu-west-2.rds.amazonaws.com", database)
+  return create_connection("admin", userdata.get("password"), "database-ads-jd2016.cgrre17yxw11.eu-west-2.rds.amazonaws.com", "ads_2024")
   
 
 
