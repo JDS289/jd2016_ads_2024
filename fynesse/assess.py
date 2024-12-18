@@ -19,19 +19,32 @@ Crete visualisation routines to assess the data (e.g. in bokeh).Ensure that date
 
 
 def resultsToGDF(results, geomColumnName="geom", flip_lat_lon=False):
-  """Constructs a GeoDataFrame from the results of an SQL query; and transforms to UK metres coordinates"""
-  gdf = gpd.GeoDataFrame(results)
-  if flip_lat_lon:
-    gdf[geomColumnName] = gdf[geomColumnName].apply(lambda geomString:
-                                                      shapely.ops.transform(lambda x, y: (y, x), shapely.from_wkt(geomString)))
+  """Constructs a GeoDataFrame from the results of an SQL query; and transforms to UK metres coordinates.
+     Either results should be a query only for the geometry column, in which case an index will be created,
+     or the first column of results will be used as the index.
+     If passing a results, not a df, geomColumnName should be an int."""
+
+  if len(results[0]) == 1:
+    gdf = gpd.GeoDataFrame(results)
+    geomColumnName = 0
   else:
-    gdf[geomColumnName] = gdf[geomColumnName].apply(lambda geomString: shapely.from_wkt(geomString))
-  return gdf.set_geometry(geomColumnName).set_crs("EPSG:4326").to_crs(crs="EPSG:27700")
+    gdf = gpd.GeoDataFrame(results).set_index(0)
+
+  if flip_lat_lon:
+    gdf.loc[:, geomColumnName] = gdf.loc[:, geomColumnName].apply(
+                    lambda geomString: shapely.ops.transform(lambda x, y: (y, x), shapely.from_wkt(geomString)))
+  else:
+    gdf.loc[:, geomColumnName] = gdf.loc[:, geomColumnName].apply(lambda geomString: shapely.from_wkt(geomString))
+
+  return gdf.set_geometry(col=geomColumnName).set_crs("EPSG:4326").to_crs(crs="EPSG:27700")
+
 
 
 def load_oa_features(conn, columns):
-  """Returns a GeoDataFrame of ([oa_code, total, l15, prop_moved, column1, column2..., boundary_geom], ...)
+  """Returns a GeoDataFrame of ([oa_code, boundary_geom, total, l15, prop_moved, column1, column2...,], ...)
      where at least one specified column is neither null nor zero."""
+  # total, l15, prop_moved, and boundary_geom are frequently used, so included by default;
+  # additionally they are in general non-null and non-zero - note the difference of behavior if columns simply included them.
 
   if not columns:
     print("Please choose some features to select.")
@@ -40,9 +53,9 @@ def load_oa_features(conn, columns):
   cur = conn.cursor()
   results = cur.execute(f"""SELECT oa,ST_AsText(boundary),total,l15,prop_moved,{','.join(columns)} FROM census2021_ts062_oa
                             WHERE {' OR '.join(f'({column} IS NOT NULL AND {column} != 0)' for column in columns)}""")
-  gdf = gpd.GeoDataFrame(cur.fetchall(), columns=["oa_code","boundary","total","l15","prop_moved"]+columns).set_index("oa_code")
-
-  return resultsToGDF(gdf, geomColumnName="boundary", flip_lat_lon=True)
+  gdf = resultsToGDF(cur.fetchall(), geomColumnName=1, flip_lat_lon=True)
+  gdf.index.name = "oa_code"
+  return gdf.rename_geometry("boundary").rename(columns=dict(enumerate(["_", "_", "total", "l15", "prop_moved"]+columns)))
 
 
 def get_buildings(north, south, east, west):
