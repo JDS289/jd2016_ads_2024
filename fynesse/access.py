@@ -14,11 +14,49 @@ import pandas as pd
 
 
 
-
 # This file accesses the data
 
 """Place commands in this file to access the data electronically. Don't remove any missing values, or deal with outliers. Make sure you have legalities correct, both intellectual property and personal data privacy rights. Beyond the legal side also think about the ethical issues around this data. """
 
+
+
+
+
+def create_connection(user, password, host, database, port=3306):
+  """ Create a database connection to the MariaDB database
+      specified by the host url and database name.
+      :param user: username
+      :param password: password
+      :param host: host url
+      :param database: database name
+      :param port: port number
+      :return: Connection object or None
+  """
+
+  conn = None
+  try:
+    conn = pymysql.connect(user=user,
+                           passwd=password,
+                           host=host,
+                           port=port,
+                           local_infile=1,
+                           db=database
+                           )
+    print(f"Connection established!")
+  except Exception as e:
+    print(f"Error connecting to the MariaDB Server: {e}")
+  return conn
+
+def create_connection_default():
+  """A simplified version of create_connection(...) that automatically specifies the parameters;
+     retrieves password from a Colab Secret."""
+
+  try:
+    from google.colab import userdata
+  except Exception as e:
+    print(f"Failed (make sure you're running this on Colab!) with the following exception:\n{e}")
+    return None
+  return create_connection("admin", userdata.get("password"), "database-ads-jd2016.cgrre17yxw11.eu-west-2.rds.amazonaws.com", "ads_2024")
 
 def load_magic_sql():
   try:
@@ -27,6 +65,7 @@ def load_magic_sql():
     shell = InteractiveShell.instance()
   except Exception as e:
     print(f"Failed (make sure you're on Colab) with the following exception:\n{e}")
+    return -1
   
   shell.run_line_magic("load_ext", "sql")
   #%pip install pymysql
@@ -141,45 +180,6 @@ def deep_map_coord_conversion(conversion, geom):
 
   return geom
 
-
-
-def create_connection(user, password, host, database, port=3306):
-  """ Create a database connection to the MariaDB database
-      specified by the host url and database name.
-      :param user: username
-      :param password: password
-      :param host: host url
-      :param database: database name
-      :param port: port number
-      :return: Connection object or None
-  """
-
-  conn = None
-  try:
-    conn = pymysql.connect(user=user,
-                           passwd=password,
-                           host=host,
-                           port=port,
-                           local_infile=1,
-                           db=database
-                           )
-    print(f"Connection established!")
-  except Exception as e:
-    print(f"Error connecting to the MariaDB Server: {e}")
-  return conn
-
-
-
-
-def create_connection_default():
-  """A simplified version of create_connection(...) that automatically specifies the parameters;
-     retrieves password from a Colab Secret."""
-
-  try:
-    from google.colab import userdata
-  except Exception as e:
-    print(f"Failed (make sure you're running this on Colab!) with the following exception:\n{e}")
-  return create_connection("admin", userdata.get("password"), "database-ads-jd2016.cgrre17yxw11.eu-west-2.rds.amazonaws.com", "ads_2024")
   
 
 
