@@ -21,7 +21,6 @@ Crete visualisation routines to assess the data (e.g. in bokeh).Ensure that date
 
 
 
-
 def resultsToGDF(results, geomColumnName="geom", flip_lat_lon=False):
   """Constructs a GeoDataFrame from the results of an SQL query; and transforms to UK metres coordinates.
      Either results should be a query only for the geometry column, in which case an index will be created,
@@ -79,6 +78,7 @@ def mean_price_by_constituency(conn, year):
   
   if year > 2024:  # (just in case)
     print("Currently we have no price-paid data in years after 2024.")
+    return None
   
   if year==2024:
     boundary_category = "2024"
