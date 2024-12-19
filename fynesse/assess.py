@@ -186,7 +186,7 @@ def price_variance_by_constituency(conn, year):
   cur = conn.cursor()
 
   cur.execute(f"""
-      SELECT p.ons_id, mean_price, ST_AsText(geometry) as geom FROM 
+      SELECT p.ons_id, price_variance, ST_AsText(geometry) as geom FROM 
          (SELECT ons_id{boundary_category} as ons_id, VARIANCE(price) as price_variance FROM prices_coordinates_data
           WHERE db_id BETWEEN {pcd_year_delimiters[year]} AND {pcd_year_delimiters[year-1]-1}
           AND ons_id{boundary_category} IS NOT NULL
