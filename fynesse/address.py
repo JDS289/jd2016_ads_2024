@@ -2,7 +2,13 @@
 
 from scipy.stats import pearsonr
 from sklearn.linear_model import LinearRegression
+from . import assess
 
+
+def greenProportion_join_meanPrice(conn, year):
+  greenGDF = assess.green_proportion_by_constituency(conn, year)
+  priceDF = assess.mean_price_by_constituency(conn, year).drop(columns=["geom"]) # we don't need two identical geoms
+  return greenGDF.join(priceDF, how="inner").astype({"green_proportion":float, "mean_price":float})
 
 
 def scatter(ax, predictions, actual, xlabel="", ylabel=""):
