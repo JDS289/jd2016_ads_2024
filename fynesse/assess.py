@@ -165,6 +165,40 @@ def num_sales_by_constituency(conn, year):
   return numSalesGDF
 
 
+def price_variance_by_constituency(conn, year):
+  """Returns the variance in the prices of house-sales in a given constituency, for a given year.
+     The constituency boundaries to be used are the ones which were in place for the most
+     recent election before the end of `year`."""
+  
+  if year < 2010:
+    print("Currently not functional for pre-2010 constituency boundaries.")
+    return None
+  
+  if year > 2024:  # (just in case)
+    print("Currently we have no price-paid data in years after 2024.")
+    return None
+  
+  if year==2024:
+    boundary_category = "2024"
+  else:
+    boundary_category = "2010_to_2019"
+
+  cur = conn.cursor()
+
+  cur.execute(f"""
+      SELECT p.ons_id, mean_price, ST_AsText(geometry) as geom FROM 
+         (SELECT ons_id{boundary_category} as ons_id, VARIANCE(price) as price_variance FROM prices_coordinates_data
+          WHERE db_id BETWEEN {pcd_year_delimiters[year]} AND {pcd_year_delimiters[year-1]-1}
+          AND ons_id{boundary_category} IS NOT NULL
+          GROUP BY ons_id{boundary_category}) p
+      JOIN boundaries{boundary_category} b ON b.ONS_ID = p.ons_id""")
+
+  priceVarianceResults = cur.fetchall()
+  priceVarianceGDF = resultsToGDF(priceVarianceResults, geomColumnName=2).rename(columns={1:"price_variance", 2:"geom"})
+  priceVarianceGDF.index.name = "ons_id"
+  return priceVarianceGDF
+  
+
 
 
 def get_buildings(north, south, east, west):
