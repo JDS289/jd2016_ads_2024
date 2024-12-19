@@ -102,6 +102,31 @@ def mean_price_by_constituency(conn, year):
 
 
 
+def green_proportion_by_constituency(conn, year):
+  """Returns the proportion of valid votes for each constituency that were for the Green party,
+     for a given election year."""
+  if year not in range(2010, 2025):
+    print("Currently not functional for pre-2010, or post-2024.")
+    return None
+
+  if year not in (2010, 2015, 2017, 2019, 2024):
+    print(f"Error: {year} was not a UK election year.")
+    return None
+
+  if year==2024:
+    boundary_category = "2024"
+  else:
+    boundary_category = "2010_to_2019"
+
+  cur = conn.cursor()
+  cur.execute(f"""SELECT g.ONS_ID as ons_id, g.proportion{year} as green_proportion, ST_AsText(geometry) as geom
+                  FROM boundaries{boundary_category} b JOIN green_proportion{boundary_category} g ON b.ONS_ID = g.ONS_ID""")
+  greenResults = cur.fetchall()
+  greenGDF = resultsToGDF(greenResults, geomColumnName=2).rename(columns={1:"green_proportion", 2:"geom"})
+  greenGDF.index.name = "ons_id"
+  return greenGDF
+
+
 
 def get_buildings(north, south, east, west):
   with warnings.catch_warnings():
