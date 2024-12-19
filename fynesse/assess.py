@@ -128,6 +128,42 @@ def green_proportion_by_constituency(conn, year):
 
 
 
+def num_sales_by_constituency(conn, year):
+  """Returns the total number of house sales in a given constituency, in a given year.
+     The constituency boundaries to be used are the ones which were in place for the most
+     recent election before the end of `year`."""
+  
+  if year < 2010:
+    print("Currently not functional for pre-2010 constituency boundaries.")
+    return None
+  
+  if year > 2024:  # (just in case)
+    print("Currently we have no price-paid data in years after 2024.")
+    return None
+  
+  if year==2024:
+    boundary_category = "2024"
+  else:
+    boundary_category = "2010_to_2019"
+
+  cur = conn.cursor()
+
+  cur.execute(f"""
+      SELECT p.ons_id, num_sales, ST_AsText(geometry) as geom FROM 
+         (SELECT ons_id{boundary_category} as ons_id, COUNT(*) as num_sales FROM prices_coordinates_data
+          WHERE db_id BETWEEN {pcd_year_delimiters[year]} AND {pcd_year_delimiters[year-1]-1}
+          AND ons_id{boundary_category} IS NOT NULL
+          GROUP BY ons_id{boundary_category}) p
+      JOIN boundaries{boundary_category} b ON b.ONS_ID = p.ons_id""")
+
+  numSalesResults = cur.fetchall()
+  numSalesGDF = resultsToGDF(numSalesResults, geomColumnName=2).rename(columns={1:"num_sales", 2:"geom"})
+  numSalesGDF.index.name = "ons_id"
+  return numSalesGDF
+
+
+
+
 def get_buildings(north, south, east, west):
   with warnings.catch_warnings():
     warnings.simplefilter("ignore")
