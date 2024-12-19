@@ -126,6 +126,9 @@ def green_proportion_by_constituency(conn, year):
   greenGDF.index.name = "ons_id"
   return greenGDF
 
+def adjust_zeros(series):
+  return series.apply(lambda x: max(x, series[series>0].min()))
+
 
 
 def num_sales_by_constituency(conn, year):
