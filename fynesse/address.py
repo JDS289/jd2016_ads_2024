@@ -5,6 +5,9 @@ from sklearn.linear_model import LinearRegression
 from . import assess
 
 
+
+
+
 def greenProportion_join_meanPrice(conn, year):
   greenGDF = assess.green_proportion_by_constituency(conn, year)
   priceDF = assess.mean_price_by_constituency(conn, year).drop(columns=["geom"]) # we don't need two identical geoms
@@ -15,6 +18,14 @@ def greenProportion_join_numSales(conn, year):
   greenGDF = assess.green_proportion_by_constituency(conn, year)
   numSalesDF = assess.num_sales_by_constituency(conn, year).drop(columns=["geom"]) # we (again) don't need two identical geoms
   return numSalesDF.join(greenGDF, how="inner").astype({"green_proportion":float, "num_sales":int})
+
+
+def greenProportion_join_priceVariance(conn, year):
+  greenGDF = assess.green_proportion_by_constituency(conn, year)
+  priceVarianceDF = assess.price_variance_by_constituency(conn, year).drop(columns=["geom"]) # we (still) don't need two identical geoms
+  return priceVarianceDF.join(greenGDF, how="inner").astype({"green_proportion":float, "price_variance":float})
+
+
 
 
 def scatter(ax, predictions, actual, xlabel="", ylabel=""):
