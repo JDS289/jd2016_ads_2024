@@ -11,6 +11,12 @@ def greenProportion_join_meanPrice(conn, year):
   return greenGDF.join(priceDF, how="inner").astype({"green_proportion":float, "mean_price":float})
 
 
+def greenProportion_join_numSales(conn, year):
+  greenGDF = assess.green_proportion_by_constituency(conn, year)
+  numSalesDF = assess.num_sales_by_constituency(conn, year).drop(columns=["geom"]) # we (again) don't need two identical geoms
+  return greenGDF.join(numSalesDF, how="inner").astype({"green_proportion":float, "num_sales":int})
+
+
 def scatter(ax, predictions, actual, xlabel="", ylabel=""):
   """`predictions` and `actual` should be DataFrames"""
   
