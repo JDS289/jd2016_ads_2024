@@ -204,7 +204,7 @@ def plot_buildings(north, south, east, west, buildings):
 
 
 def merge_with_prices(addressed_buildings): # this mutates the input, so there is no return
-  conn = access.create_connection("admin", "ayT2adBkqim", "database-ads-jd2016.cgrre17yxw11.eu-west-2.rds.amazonaws.com", "ads_2024")
+  conn = access.create_connection_default()
   cur = conn.cursor()
   price_column = [np.NaN]*len(addressed_buildings.index)
 
