@@ -34,7 +34,7 @@ def resultsToGDF(results, geomColumnName="geom", flip_lat_lon=False, columns=Non
     gdf = gpd.GeoDataFrame(results)
     geomColumnName = 0
   else:
-      gdf = gpd.GeoDataFrame(results, columns=columns).set_index(columns[0])
+    gdf = gpd.GeoDataFrame(results, columns=columns).set_index(columns[0])
 
   if flip_lat_lon:
     gdf.loc[:, geomColumnName] = gdf.loc[:, geomColumnName].apply(
