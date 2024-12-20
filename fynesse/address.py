@@ -2,6 +2,7 @@
 
 from scipy.stats import pearsonr
 from sklearn.linear_model import LinearRegression
+import numpy as np
 from . import assess
 
 
