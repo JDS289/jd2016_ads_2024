@@ -122,8 +122,7 @@ def green_proportion_by_constituency(conn, year):
   cur.execute(f"""SELECT g.ONS_ID as ons_id, g.proportion{year} as green_proportion, ST_AsText(geometry) as geom
                   FROM boundaries{boundary_category} b JOIN green_proportion{boundary_category} g ON b.ONS_ID = g.ONS_ID""")
   greenResults = cur.fetchall()
-  greenGDF = resultsToGDF(greenResults, geomColumnName=2).rename(columns={1:"green_proportion", 2:"geom"})
-  greenGDF.index.name = "ons_id"
+  greenGDF = resultsToGDF(greenResults, columns=["ons_id", "green_proportion", "geom"])
   return greenGDF
 
 def adjust_zeros(series):
@@ -135,15 +134,15 @@ def num_sales_by_constituency(conn, year):
   """Returns the total number of house sales in a given constituency, in a given year.
      The constituency boundaries to be used are the ones which were in place for the most
      recent election before the end of `year`."""
-  
+
   if year < 2010:
     print("Currently not functional for pre-2010 constituency boundaries.")
     return None
-  
+
   if year > 2024:  # (just in case)
     print("Currently we have no price-paid data in years after 2024.")
     return None
-  
+
   if year==2024:
     boundary_category = "2024"
   else:
@@ -152,7 +151,7 @@ def num_sales_by_constituency(conn, year):
   cur = conn.cursor()
 
   cur.execute(f"""
-      SELECT p.ons_id, num_sales, ST_AsText(geometry) as geom FROM 
+      SELECT p.ons_id, num_sales, ST_AsText(geometry) as geom FROM
          (SELECT ons_id{boundary_category} as ons_id, COUNT(*) as num_sales FROM prices_coordinates_data
           WHERE db_id BETWEEN {pcd_year_delimiters[year]} AND {pcd_year_delimiters[year-1]-1}
           AND ons_id{boundary_category} IS NOT NULL
@@ -160,8 +159,7 @@ def num_sales_by_constituency(conn, year):
       JOIN boundaries{boundary_category} b ON b.ONS_ID = p.ons_id""")
 
   numSalesResults = cur.fetchall()
-  numSalesGDF = resultsToGDF(numSalesResults, geomColumnName=2).rename(columns={1:"num_sales", 2:"geom"})
-  numSalesGDF.index.name = "ons_id"
+  numSalesGDF = resultsToGDF(numSalesResults, columns=["ons_id", "num_sales", "geom"])
   return numSalesGDF
 
 
@@ -194,8 +192,7 @@ def price_variance_by_constituency(conn, year):
       JOIN boundaries{boundary_category} b ON b.ONS_ID = p.ons_id""")
 
   priceVarianceResults = cur.fetchall()
-  priceVarianceGDF = resultsToGDF(priceVarianceResults, geomColumnName=2).rename(columns={1:"price_variance", 2:"geom"})
-  priceVarianceGDF.index.name = "ons_id"
+  priceVarianceGDF = resultsToGDF(priceVarianceResults, columns=columns=["ons_id", "price_variance", "geom"]))
   return priceVarianceGDF
   
 
