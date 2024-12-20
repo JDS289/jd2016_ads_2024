@@ -192,7 +192,7 @@ def price_variance_by_constituency(conn, year):
       JOIN boundaries{boundary_category} b ON b.ONS_ID = p.ons_id""")
 
   priceVarianceResults = cur.fetchall()
-  priceVarianceGDF = resultsToGDF(priceVarianceResults, columns=columns=["ons_id", "price_variance", "geom"])
+  priceVarianceGDF = resultsToGDF(priceVarianceResults, columns=["ons_id", "price_variance", "geom"])
   return priceVarianceGDF
   
 
