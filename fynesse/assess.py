@@ -98,7 +98,7 @@ def mean_price_by_constituency(conn, year):
 
   priceResults = cur.fetchall()
   priceGDF = resultsToGDF(priceResults, columns=["ons_id", "mean_price", "geom"])
-  return priceGDF
+  return priceGDF.astype({"mean_price":float})
 
 
 
@@ -123,7 +123,7 @@ def green_proportion_by_constituency(conn, year):
                   FROM boundaries{boundary_category} b JOIN green_proportion{boundary_category} g ON b.ONS_ID = g.ONS_ID""")
   greenResults = cur.fetchall()
   greenGDF = resultsToGDF(greenResults, columns=["ons_id", "green_proportion", "geom"])
-  return greenGDF
+  return greenGDF.astype({"green_proportion":float})
 
 def adjust_zeros(series):
   return series.apply(lambda x: max(x, series[series>0].min()))
@@ -193,7 +193,7 @@ def price_stdev_by_constituency(conn, year):
 
   priceStDevResults = cur.fetchall()
   priceStDevGDF = resultsToGDF(priceStDevResults, columns=["ons_id", "price_stdev", "geom"])
-  return priceStDevGDF
+  return priceStDevGDF.astype({"price_stdev":float})
   
 
 
