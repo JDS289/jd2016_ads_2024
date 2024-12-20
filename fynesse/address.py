@@ -22,7 +22,7 @@ def greenProportion_join_numSales(conn, year):
 
 def greenProportion_join_priceStDev(conn, year):
   greenGDF = assess.green_proportion_by_constituency(conn, year)
-  priceStDevDF = price_stdev_by_constituency(conn, year).drop(columns=["geom"]) # we (still) don't need two identical geoms
+  priceStDevDF = assess.price_stdev_by_constituency(conn, year).drop(columns=["geom"]) # we (still) don't need two identical geoms
   return priceStDevDF.join(greenGDF, how="inner").astype({"green_proportion":float, "price_stdev":float})
 
 
