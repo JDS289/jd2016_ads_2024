@@ -19,8 +19,6 @@ Crete visualisation routines to assess the data (e.g. in bokeh).Ensure that date
 
 
 
-
-
 def resultsToGDF(results, geomColumnName="geom", flip_lat_lon=False, columns=None):
   """Constructs a GeoDataFrame from the results of an SQL query; and transforms to UK metres coordinates.
      Either results should be a query only for the geometry column, in which case an index will be created,
@@ -50,7 +48,7 @@ def load_oa_features(conn, columns):
   """Returns a GeoDataFrame of ([oa_code, boundary_geom, total, l15, prop_moved, column1, column2...,], ...)
      where at least one specified column is neither null nor zero."""
   # total, l15, prop_moved, and boundary_geom are frequently used, so included by default;
-  # additionally they are in general non-null and non-zero - note the difference of behavior if columns simply included them.
+  # additionally they are in general non-null and non-zero - note the difference of behavior if `columns` simply included them.
 
   if not columns:
     print("Please choose some features to select.")
@@ -59,9 +57,9 @@ def load_oa_features(conn, columns):
   cur = conn.cursor()
   results = cur.execute(f"""SELECT oa,ST_AsText(boundary),total,l15,prop_moved,{','.join(columns)} FROM census2021_ts062_oa
                             WHERE {' OR '.join(f'({column} IS NOT NULL AND {column} != 0)' for column in columns)}""")
-  gdf = resultsToGDF(cur.fetchall(), geomColumnName=1, flip_lat_lon=True)
-  gdf.index.name = "oa_code"
-  return gdf.rename_geometry("boundary").rename(columns=dict(enumerate(["_", "_", "total", "l15", "prop_moved"]+columns)))
+  gdf = resultsToGDF(cur.fetchall(), geomColumnName="boundary", flip_lat_lon=True,
+                     columns=["ons_id", "boundary", "total", "l15", "prop_moved"]+columns)
+  return gdf
 
 
 
