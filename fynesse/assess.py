@@ -163,19 +163,19 @@ def num_sales_by_constituency(conn, year):
   return numSalesGDF
 
 
-def price_variance_by_constituency(conn, year):
-  """Returns the variance in the prices of house-sales in a given constituency, for a given year.
+def price_stdev_by_constituency(conn, year):
+  """Returns the standard deviation in the prices of house-sales in a given constituency, for a given year.
      The constituency boundaries to be used are the ones which were in place for the most
      recent election before the end of `year`."""
-  
+
   if year < 2010:
     print("Currently not functional for pre-2010 constituency boundaries.")
     return None
-  
+
   if year > 2024:  # (just in case)
     print("Currently we have no price-paid data in years after 2024.")
     return None
-  
+
   if year==2024:
     boundary_category = "2024"
   else:
@@ -184,16 +184,16 @@ def price_variance_by_constituency(conn, year):
   cur = conn.cursor()
 
   cur.execute(f"""
-      SELECT p.ons_id, price_variance, ST_AsText(geometry) as geom FROM 
-         (SELECT ons_id{boundary_category} as ons_id, VARIANCE(price) as price_variance FROM prices_coordinates_data
+      SELECT p.ons_id, price_stdev, ST_AsText(geometry) as geom FROM
+         (SELECT ons_id{boundary_category} as ons_id, STDDEV_POP(price) as price_stdev FROM prices_coordinates_data
           WHERE db_id BETWEEN {pcd_year_delimiters[year]} AND {pcd_year_delimiters[year-1]-1}
           AND ons_id{boundary_category} IS NOT NULL
           GROUP BY ons_id{boundary_category}) p
       JOIN boundaries{boundary_category} b ON b.ONS_ID = p.ons_id""")
 
-  priceVarianceResults = cur.fetchall()
-  priceVarianceGDF = resultsToGDF(priceVarianceResults, columns=["ons_id", "price_variance", "geom"])
-  return priceVarianceGDF
+  priceStDevResults = cur.fetchall()
+  priceStDevGDF = fynesse.assess.resultsToGDF(priceStDevResults, columns=["ons_id", "price_stdev", "geom"])
+  return priceStDevGDF
   
 
 
