@@ -128,14 +128,10 @@ def get_locations(source, tags):
 
 
 def electionResults_to_GreenProportion(path):
-  # For a CommonsLibrary election-results-by-constituency CSV
+  """For a CommonsLibrary election-results-by-constituency CSV. Primarily for election year 2010 and onwards."""
 
   with open(path) as f:
-    df = pd.read_csv(f).drop(columns=["ONS region ID", "County name", "Country name", "Result", "Majority", "First party",
-                                      "Second party", "Electorate", "Invalid votes", "Constituency type", "Declaration time",
-                                      "Member first name", "Member surname", "Member gender", "Region name", "Con", "Lab", "LD",
-                                      "UKIP", "SNP", "PC", "DUP", "SF", "SDLP", "UUP", "UUP (as UCUNF)", "APNI",
-                                      "All other candidates", "Of which other winner", "RUK", "BRX"], errors="ignore")
+    df = pd.read_csv(f).get(["ONS ID", "Constituency name", "Valid votes", "Green"])
     def to_num(numString):
       if type(numString) == str:
         return int(numString.replace(",", ""))
