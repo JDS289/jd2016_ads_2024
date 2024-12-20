@@ -21,17 +21,20 @@ Crete visualisation routines to assess the data (e.g. in bokeh).Ensure that date
 
 
 
-def resultsToGDF(results, geomColumnName="geom", flip_lat_lon=False):
+def resultsToGDF(results, geomColumnName="geom", flip_lat_lon=False, columns=None):
   """Constructs a GeoDataFrame from the results of an SQL query; and transforms to UK metres coordinates.
      Either results should be a query only for the geometry column, in which case an index will be created,
      or the first column of results will be used as the index.
-     If passing a results, not a df, geomColumnName should be an int."""
+     If passing a `%sql SELECT...`, column names will be inferred from the header.
+     Instead, you can pass the column names in `columns`.
+     If passing a cur.fetchall() without header, geomColumnName should be an int."""
+
 
   if len(results[0]) == 1:
     gdf = gpd.GeoDataFrame(results)
     geomColumnName = 0
   else:
-    gdf = gpd.GeoDataFrame(results).set_index(0)
+      gdf = gpd.GeoDataFrame(results, columns=columns).set_index(columns[0])
 
   if flip_lat_lon:
     gdf.loc[:, geomColumnName] = gdf.loc[:, geomColumnName].apply(
