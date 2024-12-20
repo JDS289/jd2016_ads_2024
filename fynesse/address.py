@@ -7,7 +7,6 @@ from . import assess
 
 
 
-
 def greenProportion_join_meanPrice(conn, year):
   greenGDF = assess.green_proportion_by_constituency(conn, year)
   priceDF = assess.mean_price_by_constituency(conn, year).drop(columns=["geom"]) # we don't need two identical geoms
@@ -26,6 +25,16 @@ def greenProportion_join_priceStDev(conn, year):
   return priceStDevDF.join(greenGDF, how="inner").astype({"green_proportion":float, "price_stdev":float})
 
 
+def GLM_predict(frame, fit_intercept=True):
+  """Returns the predictions of a created (Generalised) Linear Model for a given DataFrame,
+     whose final column should contain the target variable."""
+  fitted = LinearRegression(fit_intercept=fit_intercept).fit(frame.iloc[:,:-1].to_numpy(),
+                                                             frame.iloc[:,-1].to_numpy().reshape(-1, 1))
+  predictions = fitted.intercept_[0] if fit_intercept else np.zeros(len(frame.index))
+  for explanatory_i in range(len(frame.columns)-1):
+    predictions += fitted.coef_[0][explanatory_i] * frame.iloc[:, explanatory_i]
+
+  return predictions 
 
 
 def scatter(ax, predictions, actual, xlabel="", ylabel=""):
