@@ -192,7 +192,7 @@ def price_stdev_by_constituency(conn, year):
       JOIN boundaries{boundary_category} b ON b.ONS_ID = p.ons_id""")
 
   priceStDevResults = cur.fetchall()
-  priceStDevGDF = fynesse.assess.resultsToGDF(priceStDevResults, columns=["ons_id", "price_stdev", "geom"])
+  priceStDevGDF = resultsToGDF(priceStDevResults, columns=["ons_id", "price_stdev", "geom"])
   return priceStDevGDF
   
 
