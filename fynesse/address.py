@@ -20,10 +20,10 @@ def greenProportion_join_numSales(conn, year):
   return numSalesDF.join(greenGDF, how="inner").astype({"green_proportion":float, "num_sales":int})
 
 
-def greenProportion_join_priceVariance(conn, year):
-  greenGDF = assess.green_proportion_by_constituency(conn, year)
-  priceVarianceDF = assess.price_variance_by_constituency(conn, year).drop(columns=["geom"]) # we (still) don't need two identical geoms
-  return priceVarianceDF.join(greenGDF, how="inner").astype({"green_proportion":float, "price_variance":float})
+def greenProportion_join_priceStDev(conn, year):
+  greenGDF = fynesse.assess.green_proportion_by_constituency(conn, year)
+  priceStDevDF = price_stdev_by_constituency(conn, year).drop(columns=["geom"]) # we (still) don't need two identical geoms
+  return priceStDevDF.join(greenGDF, how="inner").astype({"green_proportion":float, "price_stdev":float})
 
 
 
